@@ -8,10 +8,14 @@ const ytdlpPath = path.join(binDir, process.platform === 'win32' ? 'yt-dlp.exe' 
 
 async function downloadWithCurl(url, dest) {
   try {
-    console.log(`[setup-bin] Downloading via curl from ${url}...`);
-    execSync(`curl.exe -L -o "${dest}" "${url}"`, { stdio: 'inherit' });
+    const curlBin = process.platform === 'win32' ? 'curl.exe' : 'curl';
+    console.log(`[setup-bin] Downloading via ${curlBin} from ${url}...`);
+    execSync(`${curlBin} -L -o "${dest}" "${url}"`, { stdio: 'inherit' });
     if (fs.existsSync(dest) && fs.statSync(dest).size > 1000000) {
-      console.log(`[setup-bin] Downloaded successfully via curl (${(fs.statSync(dest).size / (1024 * 1024)).toFixed(2)} MB).`);
+      if (process.platform !== 'win32') {
+        fs.chmodSync(dest, 0o755);
+      }
+      console.log(`[setup-bin] Downloaded successfully via ${curlBin} (${(fs.statSync(dest).size / (1024 * 1024)).toFixed(2)} MB).`);
       return true;
     }
   } catch (err) {
@@ -61,6 +65,11 @@ async function setup() {
 
   if (fs.existsSync(ytdlpPath)) {
     console.log(`[setup-bin] yt-dlp binary already exists at: ${ytdlpPath}`);
+    if (process.platform !== 'win32') {
+      try {
+        fs.chmodSync(ytdlpPath, 0o755);
+      } catch {}
+    }
   } else {
     console.log('[setup-bin] yt-dlp binary missing. Initiating download...');
     const downloadUrl = process.platform === 'win32'
@@ -74,7 +83,9 @@ async function setup() {
   }
 
   if (fs.existsSync(ytdlpPath) && process.platform !== 'win32') {
-    fs.chmodSync(ytdlpPath, 0o755);
+    try {
+      fs.chmodSync(ytdlpPath, 0o755);
+    } catch {}
   }
 
   console.log('[setup-bin] Setup complete.');

@@ -5,6 +5,7 @@ import { checkRateLimit, getClientIp } from '@/lib/rate-limiter';
 import { validateMediaUrl } from '@/lib/validator';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 export async function GET(req: NextRequest) {
   let cleanupFn: (() => void) | null = null;

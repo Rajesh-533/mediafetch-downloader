@@ -11,6 +11,9 @@ const nextConfig = {
   },
   experimental: {
     serverComponentsExternalPackages: ['ffmpeg-static'],
+    outputFileTracingIncludes: {
+      '/api/**/*': ['./bin/**/*', './node_modules/ffmpeg-static/**/*'],
+    },
   },
 };
 
